@@ -16,7 +16,7 @@
 
 package com.janrain.backplane2.server;
 
-import com.janrain.backplane.server.config.Backplane1Config;
+import com.janrain.backplane.DateTimeUtils;
 import com.janrain.backplane2.server.dao.DAOFactory;
 import com.janrain.backplane2.server.dao.redis.RedisBackplaneMessageDAO;
 import com.janrain.commons.util.Pair;
@@ -109,7 +109,7 @@ public class V2MessageProcessor implements LeaderSelectorListener {
             try {
                 lastIdAndDate = StringUtils.isEmpty(latestMessageId) ?
                     new Pair<String, Date>("", new Date(0)) :
-                    new Pair<String, Date>(latestMessageId, Backplane1Config.ISO8601.get().parse(latestMessageId.substring(0, latestMessageId.indexOf("Z") + 1)));
+                    new Pair<String, Date>(latestMessageId, DateTimeUtils.ISO8601.get().parse(latestMessageId.substring(0, latestMessageId.indexOf("Z") + 1)));
             } catch (Exception e) {
                 //
             }
@@ -196,7 +196,9 @@ public class V2MessageProcessor implements LeaderSelectorListener {
 
             // <ATOMIC>
             // save the individual message by key & TTL
-            transaction.setex(RedisBackplaneMessageDAO.getKey(newId), backplaneMessage.getExpireSeconds(), SerializationUtils.serialize(backplaneMessage));
+            transaction.setex(RedisBackplaneMessageDAO.getKey(newId),
+                    DateTimeUtils.getExpireSeconds(backplaneMessage.getIdValue(), backplaneMessage.get(BackplaneMessage.Field.EXPIRE), backplaneMessage.isSticky()),
+                    SerializationUtils.serialize(backplaneMessage));
 
             // channel and bus sorted set index
             transaction.zadd(RedisBackplaneMessageDAO.getChannelKey(backplaneMessage.getChannel()), messageTime,

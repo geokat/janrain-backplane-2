@@ -16,8 +16,8 @@
 
 package com.janrain.backplane2.server;
 
+import com.janrain.backplane.DateTimeUtils;
 import com.janrain.backplane.server.ExternalizableCore;
-import com.janrain.backplane2.server.config.Backplane2Config;
 import com.janrain.backplane2.server.dao.DAOFactory;
 import com.janrain.commons.supersimpledb.SimpleDBException;
 import com.janrain.commons.supersimpledb.message.AbstractMessage;
@@ -32,10 +32,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.text.ParseException;
 import java.util.*;
 
@@ -104,7 +100,7 @@ public class Token extends ExternalizableCore {
     public Date getExpirationDate() {
         String value = this.get(TokenField.EXPIRES);
         try {
-            return StringUtils.isNotEmpty(value) ? Backplane2Config.ISO8601.get().parse(value) : null;
+            return StringUtils.isNotEmpty(value) ? DateTimeUtils.ISO8601.get().parse(value) : null;
         } catch (ParseException e) {
             throw new IllegalStateException("Invalid ISO8601 date for TokenField.EXPIRES, should have been validated on token creation: " + value);
         } catch (NumberFormatException nfe) {
@@ -197,7 +193,7 @@ public class Token extends ExternalizableCore {
                 super.validate(value);
                 try {
                     if (StringUtils.isNotEmpty(value)) {
-                        Backplane2Config.ISO8601.get().parse(value);
+                        DateTimeUtils.ISO8601.get().parse(value);
                     }
                 } catch (ParseException e) {
                     throw new SimpleDBException("Invalid token expiration date: " + value, e);
@@ -266,7 +262,7 @@ public class Token extends ExternalizableCore {
         }
 
         public Builder expires(Date expires) {
-            data.put(TokenField.EXPIRES.getFieldName(), Backplane2Config.ISO8601.get().format(expires));
+            data.put(TokenField.EXPIRES.getFieldName(), DateTimeUtils.ISO8601.get().format(expires));
             return this;
         }
         

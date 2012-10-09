@@ -19,17 +19,14 @@ package com.janrain.backplane.server;
 import com.janrain.backplane.server.config.AuthException;
 import com.janrain.backplane.server.config.Backplane1Config;
 import com.janrain.backplane.server.config.BpServerConfig;
-import com.janrain.backplane.server.dao.redis.RedisBackplaneMessageDAO;
 import com.janrain.backplane.server.dao.DaoFactory;
-import com.janrain.backplane.server.dao.redis.RedisConfigDAO;
-import com.janrain.backplane.server.dao.redis.RedisUserDAO;
-import com.janrain.backplane2.server.*;
-import com.janrain.cache.CachedL1;
-import com.janrain.servlet.ServletUtil;
-import com.janrain.utils.BackplaneSystemProps;
+import com.janrain.backplane.server.dao.redis.RedisBackplaneMessageDAO;
 import com.janrain.backplane2.server.config.User;
+import com.janrain.cache.CachedL1;
 import com.janrain.commons.supersimpledb.SimpleDBException;
 import com.janrain.crypto.HmacHashUtils;
+import com.janrain.servlet.ServletUtil;
+import com.janrain.utils.BackplaneSystemProps;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.MetricName;
@@ -259,8 +256,13 @@ public class Backplane1Controller {
                 throw new BackplaneServerException("Message limit exceeded for this channel");
             }
 
+            BusConfig1 busConfig = DaoFactory.getBusDAO().get(bus);
+
             for(Map<String,Object> messageData : messages) {
-                BackplaneMessage message = new BackplaneMessage(bus, channel, messageData);
+                BackplaneMessage message = new BackplaneMessage(bus, channel,
+                        busConfig.getRetentionTimeSeconds(),
+                        busConfig.getRetentionTimeStickySeconds(),
+                        messageData);
                 backplaneMessageDAO.persist(message);
             }
 

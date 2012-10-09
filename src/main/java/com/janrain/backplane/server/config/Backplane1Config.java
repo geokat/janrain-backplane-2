@@ -18,10 +18,10 @@ package com.janrain.backplane.server.config;
 
 import com.janrain.backplane.server.MessageProcessor;
 import com.janrain.backplane.server.dao.DaoFactory;
-import com.janrain.utils.BackplaneSystemProps;
 import com.janrain.cache.CachedL1;
 import com.janrain.commons.util.AwsUtility;
 import com.janrain.commons.util.InitSystemProps;
+import com.janrain.utils.BackplaneSystemProps;
 import com.netflix.curator.framework.CuratorFramework;
 import com.netflix.curator.framework.CuratorFrameworkFactory;
 import com.netflix.curator.framework.recipes.leader.LeaderSelector;
@@ -35,13 +35,13 @@ import org.springframework.context.annotation.Scope;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.TimeZone;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -53,16 +53,6 @@ import java.util.concurrent.*;
 public class Backplane1Config {
 
     // - PUBLIC
-
-    // http://fahdshariff.blogspot.ca/2010/08/dateformat-with-multiple-threads.html
-    public static final ThreadLocal<DateFormat> ISO8601 = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") {{
-                setTimeZone(TimeZone.getTimeZone("GMT"));
-            }};
-        }
-    };
 
     /**
 	 * @return the debugMode

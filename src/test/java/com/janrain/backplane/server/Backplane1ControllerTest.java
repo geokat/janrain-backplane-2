@@ -19,8 +19,6 @@ package com.janrain.backplane.server;
 import com.janrain.backplane.server.config.Backplane1Config;
 import com.janrain.backplane.server.dao.DaoFactory;
 import com.janrain.backplane2.server.config.User;
-import com.janrain.commons.supersimpledb.SuperSimpleDB;
-import com.janrain.crypto.HmacHashUtils;
 import junit.framework.TestCase;
 import org.apache.catalina.util.Base64;
 import org.apache.log4j.Logger;
@@ -37,11 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.servlet.HandlerAdapter;
 
 import javax.inject.Inject;
-
 import java.util.Map;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Tom Raney
@@ -62,6 +56,9 @@ public class Backplane1ControllerTest extends TestCase {
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
     private HandlerAdapter handlerAdapter;
+
+    private static final int DEFAULT_MESSAGE_RETENTION_SECONDS = 60;
+    private static final int MAX_MESSAGE_RETENTION_SECONDS = 300;
 
     @Inject
 	private Backplane1Controller controller;
@@ -120,7 +117,7 @@ public class Backplane1ControllerTest extends TestCase {
             String credentials = "testBusOwner:busOwnerSecret";
 
             Map<String,Object> msg = new ObjectMapper().readValue(TEST_MSG, new TypeReference<Map<String,Object>>() {});
-            message = new BackplaneMessage("test", "test", msg);
+            message = new BackplaneMessage("test", "test", DEFAULT_MESSAGE_RETENTION_SECONDS, MAX_MESSAGE_RETENTION_SECONDS, msg);
             DaoFactory.getBackplaneMessageDAO().persist(message);
 
             Thread.sleep(1000);

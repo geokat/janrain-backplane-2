@@ -61,25 +61,6 @@ public class Backplane2Config {
 
     // - PUBLIC
 
-    // http://fahdshariff.blogspot.ca/2010/08/dateformat-with-multiple-threads.html
-    public static final ThreadLocal<DateFormat> ISO8601 = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") {{
-                setTimeZone(TimeZone.getTimeZone("GMT"));
-            }};
-        }
-    };
-
-    public static final ThreadLocal<DateFormat> INTERNETDATE = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'") {{
-                setTimeZone(TimeZone.getTimeZone("UTC"));
-            }};
-        }
-    };
-
     /**
 	 * @return the debugMode
 	 */

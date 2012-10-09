@@ -16,8 +16,8 @@
 
 package com.janrain.oauth2;
 
+import com.janrain.backplane.DateTimeUtils;
 import com.janrain.backplane.server.ExternalizableCore;
-import com.janrain.backplane2.server.config.Backplane2Config;
 import com.janrain.commons.supersimpledb.SimpleDBException;
 import com.janrain.commons.supersimpledb.message.MessageField;
 import com.janrain.crypto.ChannelUtil;
@@ -41,7 +41,7 @@ public class AuthorizationDecisionKey extends ExternalizableCore {
         String key = ChannelUtil.randomString(AUTHORIZATION_DECISION_KEY_LENGTH);
         data.put(Field.KEY.getFieldName(), key);
         data.put(Field.AUTH_COOKIE.getFieldName(), authCookie);
-        data.put(Field.EXPIRES.getFieldName(), Backplane2Config.ISO8601.get().format(new Date(System.currentTimeMillis() + AUTHORIZATION_DECISION_TIMEOUT_SECONDS * 1000)));
+        data.put(Field.EXPIRES.getFieldName(), DateTimeUtils.ISO8601.get().format(new Date(System.currentTimeMillis() + AUTHORIZATION_DECISION_TIMEOUT_SECONDS * 1000)));
         super.init(key, data);
     }
 

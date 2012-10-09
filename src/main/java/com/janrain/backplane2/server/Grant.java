@@ -16,8 +16,8 @@
 
 package com.janrain.backplane2.server;
 
+import com.janrain.backplane.DateTimeUtils;
 import com.janrain.backplane.server.ExternalizableCore;
-import com.janrain.backplane2.server.config.Backplane2Config;
 import com.janrain.commons.supersimpledb.SimpleDBException;
 import com.janrain.commons.supersimpledb.message.MessageField;
 import com.janrain.crypto.ChannelUtil;
@@ -68,7 +68,7 @@ public class Grant extends ExternalizableCore {
     }
     public Date getUpdateTimestamp() {
         try {
-            return Backplane2Config.ISO8601.get().parse(get(GrantField.TIME_UPDATE));
+            return DateTimeUtils.ISO8601.get().parse(get(GrantField.TIME_UPDATE));
         } catch (ParseException e) {
             throw new IllegalStateException("Invalid value on for GrantField.TIME_UPDATE, should have been validated on grant creation: " + this.get(GrantField.TIME_UPDATE));
         }
@@ -80,7 +80,7 @@ public class Grant extends ExternalizableCore {
     public Date getExpirationDate() {
         String value = this.get(GrantField.TIME_EXPIRE);
         try {
-            return StringUtils.isNotEmpty(value) ? Backplane2Config.ISO8601.get().parse(value) : null;
+            return StringUtils.isNotEmpty(value) ? DateTimeUtils.ISO8601.get().parse(value) : null;
         } catch (ParseException e) {
             throw new IllegalStateException("Invalid ISO8601 date for GrantField.TIME_EXPIRE, should have been validated on grant creation/update: " + value);
         }
@@ -150,7 +150,7 @@ public class Grant extends ExternalizableCore {
             public void validate(String value) throws SimpleDBException {
                 super.validate(value);
                 try {
-                    Backplane2Config.ISO8601.get().parse(value);
+                    DateTimeUtils.ISO8601.get().parse(value);
                 } catch (ParseException e) {
                     throw new SimpleDBException("Invalid grant value for time_update: " + value);
                 }
@@ -163,7 +163,7 @@ public class Grant extends ExternalizableCore {
                 super.validate(value);
                 try {
                     if (StringUtils.isNotEmpty(value)) {
-                        Backplane2Config.ISO8601.get().parse(value);
+                        DateTimeUtils.ISO8601.get().parse(value);
                     }
                 } catch (ParseException e) {
                     throw new SimpleDBException("Invalid grant value for time_expire: " + value);
@@ -238,11 +238,11 @@ public class Grant extends ExternalizableCore {
 
             // grant is issued/updated now
             Date now = new Date();
-            data.put(GrantField.TIME_UPDATE.getFieldName(), Backplane2Config.ISO8601.get().format(now));
+            data.put(GrantField.TIME_UPDATE.getFieldName(), DateTimeUtils.ISO8601.get().format(now));
 
             // ignore expireSeconds fields overrides data entry
             if (expireSeconds != null) {
-                data.put(GrantField.TIME_EXPIRE.getFieldName(), Backplane2Config.ISO8601.get().format(new Date(now.getTime() + expireSeconds.longValue() * 1000 )));
+                data.put(GrantField.TIME_EXPIRE.getFieldName(), DateTimeUtils.ISO8601.get().format(new Date(now.getTime() + expireSeconds.longValue() * 1000 )));
             } else {
                 data.remove(GrantField.TIME_EXPIRE.getFieldName());
             }

@@ -16,7 +16,7 @@
 
 package com.janrain.backplane.server;
 
-import com.janrain.backplane.server.config.Backplane1Config;
+import com.janrain.backplane.DateTimeUtils;
 import com.janrain.commons.supersimpledb.SimpleDBException;
 import com.janrain.commons.supersimpledb.message.MessageField;
 import com.janrain.commons.util.Pair;
@@ -40,16 +40,16 @@ public class BackplaneMessage extends ExternalizableCore {
 
     public BackplaneMessage() { }
 
-    public BackplaneMessage(String bus, String channel, Map<String, Object> data) throws BackplaneServerException, SimpleDBException {
+    public BackplaneMessage(String bus, String channel, int defaultExpireSeconds, int maxExpireSeconds, Map<String, Object> data) throws BackplaneServerException, SimpleDBException {
         Map<String,String> d = new LinkedHashMap<String, String>(toStringMap(data));
         String id = generateMessageId(new Date());
         d.put(Field.ID.getFieldName(), id);
         d.put(Field.BUS.getFieldName(), bus);
         d.put(Field.CHANNEL_NAME.getFieldName(), channel);
         d.put(Field.PAYLOAD.getFieldName(), extractFieldValueAsJsonString(Field.PAYLOAD, data));
-        if (! d.containsKey(Field.STICKY.getFieldName())) {
-            d.put(Field.STICKY.getFieldName(), Boolean.FALSE.toString());
-        }
+        Object sticky = data.get(Field.STICKY.getFieldName());
+        d.put(Field.STICKY.getFieldName(), sticky != null ? sticky.toString() : Boolean.FALSE.toString());
+        d.put(Field.EXPIRE.getFieldName(), DateTimeUtils.processExpireTime(sticky, data.get(Field.EXPIRE.getFieldName()), defaultExpireSeconds, maxExpireSeconds));
         super.init(id, d);
     }
 
@@ -112,6 +112,7 @@ public class BackplaneMessage extends ExternalizableCore {
             // print sticky as a (json) boolean
             msg.put(Field.STICKY.getFieldName(), Boolean.valueOf(sticky));
         }
+        msg.put(Field.EXPIRE.getFieldName(), get(Field.EXPIRE));
         try {
             msg.put(
                 BackplaneMessage.Field.PAYLOAD.getFieldName(),
@@ -136,6 +137,16 @@ public class BackplaneMessage extends ExternalizableCore {
                 super.validate(value);
                 if (value != null && ! Boolean.TRUE.toString().equalsIgnoreCase(value) && ! Boolean.FALSE.toString().equalsIgnoreCase(value)) {
                     throw new IllegalArgumentException("Invalid boolean value for " + getFieldName() + ": " + value);
+                }
+            }},
+        EXPIRE("expire", true) {
+            @Override
+            public void validate(String value) throws SimpleDBException {
+                super.validate(value);
+                try {
+                    DateTimeUtils.INTERNETDATE.get().parse(value);
+                } catch (ParseException e) {
+                    throw new InvalidRequestException("Invalid Internet Date/Time value for " + getFieldName() + ": " + value);
                 }
             }},
         SOURCE("source") {
@@ -188,7 +199,7 @@ public class BackplaneMessage extends ExternalizableCore {
         }
 
         try {
-            return Backplane1Config.ISO8601.get().parse(backplaneMessageId.substring(0, backplaneMessageId.indexOf("Z") + 1));
+            return DateTimeUtils.ISO8601.get().parse(backplaneMessageId.substring(0, backplaneMessageId.indexOf("Z") + 1));
         } catch (ParseException e) {
             logger.warn(e);
         }
@@ -205,7 +216,7 @@ public class BackplaneMessage extends ExternalizableCore {
      * @return a time-based, lexicographically comparable message ID.
      */
     private static String generateMessageId(Date date) {
-        return Backplane1Config.ISO8601.get().format(date) + "-" + ChannelUtil.randomString(10);
+        return DateTimeUtils.ISO8601.get().format(date) + "-" + ChannelUtil.randomString(10);
     }
 
     private String extractFieldValueAsJsonString(Field field, Map<String,Object> data) throws BackplaneServerException {

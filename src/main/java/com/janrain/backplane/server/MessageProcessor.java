@@ -16,10 +16,9 @@
 
 package com.janrain.backplane.server;
 
-import com.janrain.backplane.server.config.Backplane1Config;
+import com.janrain.backplane.DateTimeUtils;
 import com.janrain.backplane.server.dao.redis.RedisBackplaneMessageDAO;
 import com.janrain.backplane.server.dao.DaoFactory;
-import com.janrain.backplane2.server.dao.BackplaneMessageDAO;
 import com.janrain.commons.util.Pair;
 import com.janrain.redis.Redis;
 import com.janrain.utils.BackplaneSystemProps;
@@ -29,12 +28,10 @@ import com.netflix.curator.framework.state.ConnectionState;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.MetricName;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Transaction;
 
 import java.util.*;
@@ -93,7 +90,7 @@ public class MessageProcessor implements LeaderSelectorListener {
                     try {
                         lastIdAndDate = StringUtils.isEmpty(latestMessageId) ?
                                 new Pair<String, Date>("", new Date(0)) :
-                                new Pair<String, Date>(latestMessageId, Backplane1Config.ISO8601.get().parse(latestMessageId.substring(0, latestMessageId.indexOf("Z") + 1)));
+                                new Pair<String, Date>(latestMessageId, DateTimeUtils.ISO8601.get().parse(latestMessageId.substring(0, latestMessageId.indexOf("Z") + 1)));
                     } catch (Exception e) {
                         //
                     }
